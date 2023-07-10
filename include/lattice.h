@@ -404,7 +404,7 @@ void QfeLattice::InitTriangle(int Nx, int Ny, double wt1, double wt2,
 
     // add "right-handed" faces
     AddFace(s, xp1 + y * Nx, x + yp1 * Nx);
-    [OAddFace(xp1 + y * Nx, xp1 + yp1 * Nx, x + yp1 * Nx);
+    AddFace(xp1 + y * Nx, xp1 + yp1 * Nx, x + yp1 * Nx);
     int l1 = FindLink(s, xp1 + y * Nx);
     int l2 = FindLink(s, x + yp1 * Nx);
     int l3 = FindLink(xp1 + y * Nx, x + yp1 * Nx);
