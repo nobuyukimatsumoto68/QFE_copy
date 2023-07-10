@@ -1,0 +1,345 @@
+N: 3
+k1: 1.000000000000
+k2: 1.000000000000
+k3: 1.000000000000
+n_sites = 9
+n_links = 27
+n_faces = 18
+n_cells = 0
+vol = 9
+0 th
+site wt = 1
+site nn = 6
+site links = 0, 2, 9, 10, 21, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 1, 3, 2, 5, 7, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+1 th
+site wt = 1
+site nn = 6
+site links = 0, 1, 3, 5, 23, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 0, 3, 4, 2, 7, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+2 th
+site wt = 1
+site nn = 6
+site links = 5, 6, 7, 9, 25, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 1, 4, 5, 0, 8, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+3 th
+site wt = 1
+site nn = 6
+site links = 1, 2, 4, 11, 13, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 1, 0, 4, 5, 6, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+4 th
+site wt = 1
+site nn = 6
+site links = 3, 4, 6, 8, 12, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 1, 3, 2, 5, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+5 th
+site wt = 1
+site nn = 6
+site links = 7, 8, 10, 11, 16, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 2, 4, 0, 3, 7, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+6 th
+site wt = 1
+site nn = 6
+site links = 12, 13, 15, 20, 22, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 4, 3, 7, 8, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+7 th
+site wt = 1
+site nn = 6
+site links = 14, 15, 16, 18, 21, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 4, 6, 5, 8, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+8 th
+site wt = 1
+site nn = 6
+site links = 17, 18, 19, 20, 24, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+site neighbors = 5, 7, 3, 6, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+id = 0
+0 th
+link wt = 1
+link sites = 0, 1
+link n_faces = 2
+link faces = 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+1 th
+link wt = 1
+link sites = 1, 3
+link n_faces = 2
+link faces = 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+2 th
+link wt = 1
+link sites = 3, 0
+link n_faces = 2
+link faces = 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+3 th
+link wt = 1
+link sites = 1, 4
+link n_faces = 2
+link faces = 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+4 th
+link wt = 1
+link sites = 4, 3
+link n_faces = 2
+link faces = 1, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+5 th
+link wt = 1
+link sites = 1, 2
+link n_faces = 2
+link faces = 2, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+6 th
+link wt = 1
+link sites = 2, 4
+link n_faces = 2
+link faces = 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+7 th
+link wt = 1
+link sites = 2, 5
+link n_faces = 2
+link faces = 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+8 th
+link wt = 1
+link sites = 5, 4
+link n_faces = 2
+link faces = 3, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+9 th
+link wt = 1
+link sites = 2, 0
+link n_faces = 2
+link faces = 4, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+10 th
+link wt = 1
+link sites = 0, 5
+link n_faces = 2
+link faces = 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+11 th
+link wt = 1
+link sites = 3, 5
+link n_faces = 2
+link faces = 5, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+12 th
+link wt = 1
+link sites = 4, 6
+link n_faces = 2
+link faces = 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+13 th
+link wt = 1
+link sites = 6, 3
+link n_faces = 2
+link faces = 6, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+14 th
+link wt = 1
+link sites = 4, 7
+link n_faces = 2
+link faces = 7, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+15 th
+link wt = 1
+link sites = 7, 6
+link n_faces = 2
+link faces = 7, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+16 th
+link wt = 1
+link sites = 5, 7
+link n_faces = 2
+link faces = 8, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+17 th
+link wt = 1
+link sites = 5, 8
+link n_faces = 2
+link faces = 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+18 th
+link wt = 1
+link sites = 8, 7
+link n_faces = 2
+link faces = 9, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+19 th
+link wt = 1
+link sites = 3, 8
+link n_faces = 2
+link faces = 10, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+20 th
+link wt = 1
+link sites = 6, 8
+link n_faces = 2
+link faces = 11, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+21 th
+link wt = 1
+link sites = 7, 0
+link n_faces = 2
+link faces = 12, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+22 th
+link wt = 1
+link sites = 0, 6
+link n_faces = 2
+link faces = 12, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+23 th
+link wt = 1
+link sites = 7, 1
+link n_faces = 2
+link faces = 13, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+24 th
+link wt = 1
+link sites = 8, 1
+link n_faces = 2
+link faces = 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+25 th
+link wt = 1
+link sites = 8, 2
+link n_faces = 2
+link faces = 15, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+26 th
+link wt = 1
+link sites = 6, 2
+link n_faces = 2
+link faces = 16, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 1, 2, 0, 0, 
+face sites = 0, 1, 3, 0, 
+face flip_edge = 0, 0, 0, 1, 
+1 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 4, 1, 3, 0, 
+face sites = 1, 4, 3, 0, 
+face flip_edge = 0, 0, 0, 1, 
+2 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 6, 3, 5, 0, 
+face sites = 1, 2, 4, 0, 
+face flip_edge = 0, 0, 0, 1, 
+3 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 8, 6, 7, 0, 
+face sites = 2, 5, 4, 0, 
+face flip_edge = 0, 0, 0, 1, 
+4 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 10, 7, 9, 0, 
+face sites = 2, 0, 5, 0, 
+face flip_edge = 0, 0, 0, 1, 
+5 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 11, 10, 2, 0, 
+face sites = 0, 3, 5, 0, 
+face flip_edge = 0, 0, 1, 1, 
+6 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 12, 13, 4, 0, 
+face sites = 3, 4, 6, 0, 
+face flip_edge = 0, 0, 1, 1, 
+7 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 15, 12, 14, 0, 
+face sites = 4, 7, 6, 0, 
+face flip_edge = 0, 0, 0, 1, 
+8 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 16, 14, 8, 0, 
+face sites = 4, 5, 7, 0, 
+face flip_edge = 0, 0, 1, 1, 
+9 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 18, 16, 17, 0, 
+face sites = 5, 8, 7, 0, 
+face flip_edge = 0, 0, 0, 1, 
+10 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 19, 17, 11, 0, 
+face sites = 5, 3, 8, 0, 
+face flip_edge = 0, 0, 1, 1, 
+11 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 20, 19, 13, 0, 
+face sites = 3, 6, 8, 0, 
+face flip_edge = 0, 0, 1, 1, 
+12 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 21, 22, 15, 0, 
+face sites = 6, 7, 0, 0, 
+face flip_edge = 0, 0, 1, 1, 
+13 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 0, 21, 23, 0, 
+face sites = 7, 1, 0, 0, 
+face flip_edge = 1, 0, 0, 1, 
+14 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 24, 23, 18, 0, 
+face sites = 7, 8, 1, 0, 
+face flip_edge = 0, 0, 1, 1, 
+15 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 5, 24, 25, 0, 
+face sites = 8, 2, 1, 0, 
+face flip_edge = 1, 0, 0, 1, 
+16 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 26, 25, 20, 0, 
+face sites = 8, 6, 2, 0, 
+face flip_edge = 0, 0, 1, 1, 
+17 th
+face wt = 1
+face n_edges = 3
+face n_cells = 0
+face cells = 0, 0, 
+face edges = 9, 26, 22, 0, 
+face sites = 6, 0, 2, 0, 
+face flip_edge = 1, 0, 1, 1, 
+distinct_n_sites = 
+distinct_first = 
+n_distinct = 0
