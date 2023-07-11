@@ -1,10 +1,12 @@
-// ising_flat_crit.cc
+// ising_flat_crit_corr.cc
 
 #include <getopt.h>
 #include <cassert>
 #include <cmath>
 #include <cstdio>
 #include <vector>
+#include <filesystem>
+#include <iostream>
 #include "ising.h"
 #include "statistics.h"
 
@@ -43,7 +45,7 @@ double find_crit(double k1, double k2, double k3) {
 
 int main(int argc, char* argv[]) {
 
-  int N = 32;
+  int N = 64;
 
   // choose weights for the 3 directions and calculate beta critical
   double k1 = 1.0;
@@ -54,10 +56,10 @@ int main(int argc, char* argv[]) {
   double beta_mult = 1.0;
 
   int n_therm = 2000;
-  int n_traj = 50000;
+  int n_traj = 40000;
   int n_skip = 20;
   int n_wolff = 3;
-  int n_metropolis = 5;
+  int n_metropolis = 0;
 
   const struct option long_options[] = {
     { "n_lattice", required_argument, 0, 'N' },
@@ -233,7 +235,8 @@ int main(int argc, char* argv[]) {
         int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
         int dw = (N - abs(2 * abs(w1 - w2) - N)) / 2;
 
-        const double spin_spin = field.spin[s1] * field.spin[s2];
+        const double spin_spin = 1.0 * field.spin[s1] * field.spin[s2];
+        // std::cerr << "spin_spin = " << spin_spin << std::endl;
         if (y1 == y2) corr_x_sum_direct[dx] += spin_spin;
         if (x1 == x2) corr_y_sum_direct[dy] += spin_spin;
         if (w1 == w2) corr_z_sum_direct[dx] += spin_spin;
@@ -258,13 +261,26 @@ int main(int argc, char* argv[]) {
       corr_zero_y[i].Measure(double(corr_zero_y_sum[i]) / double(count * N));
       corr_zero_z[i].Measure(double(corr_zero_z_sum[i]) / double(count * N));
     }
+    for (int i = 0; i < N/2; i++) {
+      double denom = N*N;
+      if(i!=0) denom *= 2.0;
+      corr_x_direct[i].Measure(double(corr_x_sum_direct[i])/denom);
+      corr_y_direct[i].Measure(double(corr_y_sum_direct[i])/denom);
+      corr_z_direct[i].Measure(double(corr_z_sum_direct[i])/denom);
+      corr_w_direct[i].Measure(double(corr_w_sum_direct[i])/denom);
+      corr_xz_direct[i].Measure(double(corr_xz_sum_direct[i])/denom);
+      corr_yz_direct[i].Measure(double(corr_yz_sum_direct[i])/denom);
+      corr_zero_x_direct[i].Measure(double(corr_zero_x_sum_direct[i])/denom);
+      corr_zero_y_direct[i].Measure(double(corr_zero_y_sum_direct[i])/denom);
+      corr_zero_z_direct[i].Measure(double(corr_zero_z_sum_direct[i])/denom);
+    }
 
     action.push_back(field.Action());
     mag.push_back(field.MeanSpin());
-    printf("%06d %.12f %+.12f %.4f %.4f\n", \
-        n, action.back(), mag.back(), \
-        accept_metropolis.last, \
-        cluster_size.last);
+    printf("%06d %.12f %+.12f %.4f %.4f\n",     \
+           n, action.back(), mag.back(),        \
+           accept_metropolis.last,              \
+           cluster_size.last);
   }
 
   std::vector<double> mag_abs(mag.size());
@@ -293,64 +309,80 @@ int main(int argc, char* argv[]) {
       JackknifeSusceptibility(mag2, mag_abs));
 
   // open an output file
-  char path[50];
-  sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_.dat", N, k1, k2, k3);
-  FILE* file = fopen(path, "w");
-  assert(file != nullptr);
-
-  printf("\ncorr_x:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
-    fprintf(file, "0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
+  std::filesystem::create_directory("ising_flat_crit");
+  {
+    char path[50];
+    sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_x.dat", N, k1, k2, k3);
+    FILE* file = fopen(path, "w");
+    assert(file != nullptr);
+    printf("\ncorr_x:\n");
+    for (int i = 0; i < N/2; i++) {
+      printf("0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
+      fprintf(file, "0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
+    }
+  }
+  {
+    char path[54];
+    sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_x_direct.dat", N, k1, k2, k3);
+    FILE* file = fopen(path, "w");
+    assert(file != nullptr);
+    printf("\ncorr_x:\n");
+    for (int i = 0; i < N/2; i++) {
+      printf("0 %04d %.12e %.12e\n", i,
+             corr_x_direct[i].Mean(), corr_x_direct[i].Error());
+      fprintf(file, "0 %04d %.12e %.12e\n", i,
+              corr_x_direct[i].Mean(), corr_x_direct[i].Error());
+    }
   }
 
-  printf("\ncorr_y:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("1 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
-    fprintf(file, "1 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
-  }
 
-  printf("\ncorr_z:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("2 %04d %.12e %.12e\n", i, corr_z[i].Mean(), corr_z[i].Error());
-    fprintf(file, "2 %04d %.12e %.12e\n", i, corr_z[i].Mean(), corr_z[i].Error());
-  }
+  // printf("\ncorr_y:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("1 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
+  //   fprintf(file, "1 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
+  // }
 
-  printf("\ncorr_w:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("3 %04d %.12e %.12e\n", i, corr_w[i].Mean(), corr_w[i].Error());
-    fprintf(file, "3 %04d %.12e %.12e\n", i, corr_w[i].Mean(), corr_w[i].Error());
-  }
+  // printf("\ncorr_z:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("2 %04d %.12e %.12e\n", i, corr_z[i].Mean(), corr_z[i].Error());
+  //   fprintf(file, "2 %04d %.12e %.12e\n", i, corr_z[i].Mean(), corr_z[i].Error());
+  // }
 
-  printf("\ncorr_xz:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("4 %04d %.12e %.12e\n", i, corr_xz[i].Mean(), corr_xz[i].Error());
-    fprintf(file, "4 %04d %.12e %.12e\n", i, corr_xz[i].Mean(), corr_xz[i].Error());
-  }
+  // printf("\ncorr_w:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("3 %04d %.12e %.12e\n", i, corr_w[i].Mean(), corr_w[i].Error());
+  //   fprintf(file, "3 %04d %.12e %.12e\n", i, corr_w[i].Mean(), corr_w[i].Error());
+  // }
 
-  printf("\ncorr_yz:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("5 %04d %.12e %.12e\n", i, corr_yz[i].Mean(), corr_yz[i].Error());
-    fprintf(file, "5 %04d %.12e %.12e\n", i, corr_yz[i].Mean(), corr_yz[i].Error());
-  }
+  // printf("\ncorr_xz:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("4 %04d %.12e %.12e\n", i, corr_xz[i].Mean(), corr_xz[i].Error());
+  //   fprintf(file, "4 %04d %.12e %.12e\n", i, corr_xz[i].Mean(), corr_xz[i].Error());
+  // }
 
-  printf("\ncorr_zero_x:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("6 %04d %.12e %.12e\n", i, corr_zero_x[i].Mean(), corr_zero_x[i].Error());
-    fprintf(file, "6 %04d %.12e %.12e\n", i, corr_zero_x[i].Mean(), corr_zero_x[i].Error());
-  }
+  // printf("\ncorr_yz:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("5 %04d %.12e %.12e\n", i, corr_yz[i].Mean(), corr_yz[i].Error());
+  //   fprintf(file, "5 %04d %.12e %.12e\n", i, corr_yz[i].Mean(), corr_yz[i].Error());
+  // }
 
-  printf("\ncorr_zero_y:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("7 %04d %.12e %.12e\n", i, corr_zero_y[i].Mean(), corr_zero_y[i].Error());
-    fprintf(file, "7 %04d %.12e %.12e\n", i, corr_zero_y[i].Mean(), corr_zero_y[i].Error());
-  }
+  // printf("\ncorr_zero_x:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("6 %04d %.12e %.12e\n", i, corr_zero_x[i].Mean(), corr_zero_x[i].Error());
+  //   fprintf(file, "6 %04d %.12e %.12e\n", i, corr_zero_x[i].Mean(), corr_zero_x[i].Error());
+  // }
 
-  printf("\ncorr_zero_z:\n");
-  for (int i = 0; i < N/2; i++) {
-    printf("8 %04d %.12e %.12e\n", i, corr_zero_z[i].Mean(), corr_zero_z[i].Error());
-    fprintf(file, "8 %04d %.12e %.12e\n", i, corr_zero_z[i].Mean(), corr_zero_z[i].Error());
-  }
+  // printf("\ncorr_zero_y:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("7 %04d %.12e %.12e\n", i, corr_zero_y[i].Mean(), corr_zero_y[i].Error());
+  //   fprintf(file, "7 %04d %.12e %.12e\n", i, corr_zero_y[i].Mean(), corr_zero_y[i].Error());
+  // }
+
+  // printf("\ncorr_zero_z:\n");
+  // for (int i = 0; i < N/2; i++) {
+  //   printf("8 %04d %.12e %.12e\n", i, corr_zero_z[i].Mean(), corr_zero_z[i].Error());
+  //   fprintf(file, "8 %04d %.12e %.12e\n", i, corr_zero_z[i].Mean(), corr_zero_z[i].Error());
+  // }
 
   return 0;
 }
