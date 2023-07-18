@@ -45,8 +45,8 @@ double find_crit(double k1, double k2, double k3) {
 
 int main(int argc, char* argv[]) {
 
-  // int N = 64;
-  int N = 8;
+  int N = 64;
+  // int N = 4;
 
   // choose weights for the 3 directions and calculate beta critical
   double k1 = 1.0;
@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
 
   int n_skip = 60;
   int n_therm = n_skip * 100;
-  // int n_traj = n_skip * 1600; // 40k
-  int n_traj = n_skip * 1; // 40k
+  int n_traj = n_skip * 1600; // 40k
+  // int n_traj = n_skip * 1; // 40k
   // int n_traj = n_skip * 400; // 40k
   int n_wolff = 1;
   int n_metropolis = 0;
@@ -117,15 +117,13 @@ int main(int argc, char* argv[]) {
   printf("initial action: %.12f\n", field.Action());
 
   // correlator measurements in each direction
-  // std::vector<QfeMeasReal> corr_x(N/2);
-  // std::vector<QfeMeasReal> corr_y(N/2);
-  std::vector<QfeMeasReal> corr_z(N);
-  std::vector<QfeMeasReal> corr_w(N);
+  std::vector<QfeMeasReal> corr_x(N/2+1);
+  std::vector<QfeMeasReal> corr_y(N/2+1);
   // //
-  // std::vector<QfeMeasReal> corr_x_direct(N/2);
-  // std::vector<QfeMeasReal> corr_y_direct(N/2);
-  std::vector<QfeMeasReal> corr_z_direct(N);
-  std::vector<QfeMeasReal> corr_w_direct(N);
+  std::vector<QfeMeasReal> corr_x_direct(N/2+1);
+  std::vector<QfeMeasReal> corr_y_direct(N/2+1);
+  std::vector<QfeMeasReal> corr_z_direct(N+1);
+  std::vector<QfeMeasReal> corr_w_direct(N+1);
   //
   std::vector<QfeMeasReal> corr_all_direct(N*N);
 
@@ -151,13 +149,11 @@ int main(int argc, char* argv[]) {
     if (n % n_skip || n < n_therm) continue;
 
     // measure correlators
-    // std::vector<int> corr_x_sum(N, 0);
-    // std::vector<int> corr_y_sum(N, 0);
-    std::vector<int> corr_z_sum(2*N, 0);
-    std::vector<int> corr_w_sum(2*N, 0);
+    std::vector<int> corr_x_sum(N, 0);
+    std::vector<int> corr_y_sum(N, 0);
     // //
-    // std::vector<int> corr_x_sum_direct(N, 0);
-    // std::vector<int> corr_y_sum_direct(N, 0);
+    std::vector<int> corr_x_sum_direct(N, 0);
+    std::vector<int> corr_y_sum_direct(N, 0);
     std::vector<int> corr_z_sum_direct(2*N, 0);
     std::vector<int> corr_w_sum_direct(2*N, 0);
     std::vector<int> corr_z_sum_counter(2*N, 0);
@@ -167,85 +163,59 @@ int main(int argc, char* argv[]) {
 
     int count = field.wolff_cluster.size();
     for (int i1 = 0; i1 < count; i1++) {
+      const int s1 = field.wolff_cluster[i1];
+      const int x1 = s1 % N;
+      const int y1 = s1 / N;
+
       for (int i2 = i1; i2 < count; i2++) {
+        const int s2 = field.wolff_cluster[i2];
+        const int x2 = s2 % N;
+        const int y2 = s2 / N;
 
-        int s1 = field.wolff_cluster[i1];
-        int x1 = s1 % N;
-        int y1 = s1 / N;
-        int z1 = (x1 + y1) % (2*N);
-        int w1 = (x1 - y1 + 2*N) % (2*N);
+        const int dx = (N - abs(2 * abs(x1 - x2) - N)) / 2;
+        const int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
 
-        int s2 = field.wolff_cluster[i2];
-        int x2 = s2 % N;
-        int y2 = s2 / N;
-        int z2 = (x2 + y2) % (2*N);
-        int w2 = (x2 - y2 + 2*N) % (2*N);
-
-        // int dx = (N - abs(2 * abs(x1 - x2) - N)) / 2;
-        // int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
-        int dz = (2*N - abs(2 * abs(z1 - z2) - 2*N)) / 2;
-        int dw = (2*N - abs(2 * abs(w1 - w2) - 2*N)) / 2;
-        // int dx = (N - abs(2 * abs(x1 - x2) - N)) / 2;
-        // int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
-        // int dw = (N - abs(2 * abs(w1 - w2) - N)) / 2;
-
-        // if (y1 == y2) corr_x_sum[dx]++;
-        // if (x1 == x2) corr_y_sum[dy]++;
-        // if (w1 == w2) corr_z_sum[dx]++;
-        // if (z1 == z2) corr_w_sum[dx]++;
-        if (w1 == w2) corr_z_sum[dz]++;
-        if (z1 == z2) corr_w_sum[dw]++;
+        if (y1 == y2) corr_x_sum[dx]++;
+        if (x1 == x2) corr_y_sum[dy]++;
       }
     }
 
-    for (long int s1 = 0; s1 < N*N; s1++) {
-      for (long int s2 = 0; s2 < N*N; s2++) {
-        int x1 = s1 % N;
-        int y1 = s1 / N;
-        int z1 = (x1 + y1) % (2*N);
-        int w1 = (x1 - y1 + 2*N) % (2*N);
+    for (int s1 = 0; s1 < N*N; s1++) {
+      const int x1 = s1 % N;
+      const int y1 = s1 / N;
+      const int z1 = (x1 + y1) % (2*N);
+      const int w1 = (x1 - y1 + 2*N) % (2*N);
 
-        int x2 = s2 % N;
-        int y2 = s2 / N;
-        int z2 = (x2 + y2) % (2*N);
-        int w2 = (x2 - y2 + 2*N) % (2*N);
+      for (int s2 = 0; s2 < N*N; s2++) {
+        const int x2 = s2 % N;
+        const int y2 = s2 / N;
+        const int z2 = (x2 + y2) % (2*N);
+        const int w2 = (x2 - y2 + 2*N) % (2*N);
 
-        // int dx = (N - abs(2 * abs(x1 - x2) - N)) / 2;
-        // int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
-        int dz = (2*N - abs(2 * abs(z1 - z2) - 2*N)) / 2;
-        int dw = (2*N - abs(2 * abs(w1 - w2) - 2*N)) / 2;
-        // int dx = (N - abs(2 * abs(x1 - x2) - N)) / 2;
-        // int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
-        // int dw = (N - abs(2 * abs(w1 - w2) - N)) / 2;
+        const int dx = (N - abs(2 * abs(x1 - x2) - N)) / 2;
+        const int dy = (N - abs(2 * abs(y1 - y2) - N)) / 2;
+        const int dz = (2*N - abs(2 * abs(z1 - z2) - 2*N)) / 2;
+        const int dw = (2*N - abs(2 * abs(w1 - w2) - 2*N)) / 2;
 
-        const double spin_spin = 1.0 * field.spin[s1] * field.spin[s2];
-        // std::cerr << "spin_spin = " << spin_spin << std::endl;
-        // if (y1 == y2) corr_x_sum_direct[dx] += spin_spin;
-        // if (x1 == x2) corr_y_sum_direct[dy] += spin_spin;
+        const double spin_spin = field.spin[s1] * field.spin[s2];
+        if (y1 == y2) corr_x_sum_direct[dx] += spin_spin;
+        if (x1 == x2) corr_y_sum_direct[dy] += spin_spin;
         if (w1 == w2) {
-          std::cerr << "w1==w2" << std::endl
-                    << "x1 = " << x1 << ", y1 = " << y1 << std::endl
-                    << "x2 = " << x2 << ", y2 = " << y2 << std::endl
-                    << "dw = " << dw << ", dz = " << dz << std::endl;
           corr_z_sum_direct[dz] += spin_spin;
           corr_z_sum_counter[dz]++;
         }
         if (z1 == z2) {
           corr_w_sum_direct[dw] += spin_spin;
-          corr_z_sum_counter[dw]++;
+          corr_w_sum_counter[dw]++;
         }
-        // if (y1 == y2) corr_x_sum_direct[dx] += spin_spin;
-        // if (x1 == x2) corr_y_sum_direct[dy] += spin_spin;
-        // if (w1 == w2) corr_z_sum_direct[dx] += spin_spin;
-        // if (z1 == z2) corr_w_sum_direct[dx] += spin_spin;
       }
     }
 
-    for (long int s1 = 0; s1 < N*N; s1++) {
+    for (int s1 = 0; s1 < N*N; s1++) {
       const int x1 = s1 % N;
       const int y1 = s1 / N;
 
-      for (long int s2 = 0; s2 < N*N; s2++) {
+      for (int s2 = 0; s2 < N*N; s2++) {
         const int x2 = s2 % N;
         const int y2 = s2 / N;
 
@@ -255,26 +225,21 @@ int main(int argc, char* argv[]) {
       }
     }
 
-
     // add correlator measurements
-    // for (int i = 0; i < N/2; i++) {
-    //   double denom = N*N;
-    //   if(i!=0) denom *= 2.0;
-    //   corr_x[i].Measure(double(corr_x_sum[i]) / double(count));
-    //   corr_y[i].Measure(double(corr_y_sum[i]) / double(count));
-    //   corr_x_direct[i].Measure(double(corr_x_sum_direct[i])/denom);
-    //   corr_y_direct[i].Measure(double(corr_y_sum_direct[i])/denom);
-    // }
-    for (int i = 0; i < N; i++) {
-      // double denom = N*N;
-      // if(i!=0) denom *= 2.0;
-      corr_z[i].Measure(double(corr_z_sum[i]) / double(count));
-      corr_w[i].Measure(double(corr_w_sum[i]) / double(count));
+    for (int i = 0; i <= N/2; i++) {
+      double denom = N*N;
+      if(i!=0 || i!=N/2) denom *= 2.0;
+      corr_x[i].Measure(double(corr_x_sum[i]) / double(count));
+      corr_y[i].Measure(double(corr_y_sum[i]) / double(count));
+      corr_x_direct[i].Measure(double(corr_x_sum_direct[i])/denom);
+      corr_y_direct[i].Measure(double(corr_y_sum_direct[i])/denom);
+    }
+    for (int i = 0; i <= N; i++) {
       corr_z_direct[i].Measure(double(corr_z_sum_direct[i])/corr_z_sum_counter[i]);
       corr_w_direct[i].Measure(double(corr_w_sum_direct[i])/corr_w_sum_counter[i]);
     }
 
-    for(long int s=0; s<N*N; s++){
+    for(int s=0; s<N*N; s++){
       corr_all_direct[s].Measure( 1.0*corr_all_sum_direct[s]/(N*N) );
     }
 
@@ -313,96 +278,74 @@ int main(int argc, char* argv[]) {
 
   // open an output file
   std::filesystem::create_directory("ising_flat_crit");
-  // {
-  //   char path[50];
-  //   sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_x.dat", N, k1, k2, k3);
-  //   FILE* file = fopen(path, "w");
-  //   assert(file != nullptr);
-  //   printf("\ncorr_x:\n");
-  //   for (int i = 0; i < N/2; i++) {
-  //     printf("0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
-  //     fprintf(file, "0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
-  //   }
-  // }
-  // {
-  //   char path[54];
-  //   sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_x_direct.dat", N, k1, k2, k3);
-  //   FILE* file = fopen(path, "w");
-  //   assert(file != nullptr);
-  //   printf("\ncorr_y:\n");
-  //   for (int i = 0; i < N/2; i++) {
-  //     printf("0 %04d %.12e %.12e\n", i,
-  //            corr_x_direct[i].Mean(), corr_x_direct[i].Error());
-  //     fprintf(file, "0 %04d %.12e %.12e\n", i,
-  //             corr_x_direct[i].Mean(), corr_x_direct[i].Error());
-  //   }
-  // }
-  // {
-  //   char path[50];
-  //   sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_y.dat", N, k1, k2, k3);
-  //   FILE* file = fopen(path, "w");
-  //   assert(file != nullptr);
-  //   printf("\ncorr_y:\n");
-  //   for (int i = 0; i < N/2; i++) {
-  //     printf("0 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
-  //     fprintf(file, "0 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
-  //   }
-  // }
-  // {
-  //   char path[54];
-  //   sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_y_direct.dat", N, k1, k2, k3);
-  //   FILE* file = fopen(path, "w");
-  //   assert(file != nullptr);
-  //   printf("\ncorr_y:\n");
-  //   for (int i = 0; i < N/2; i++) {
-  //     printf("0 %04d %.12e %.12e\n", i,
-  //            corr_y_direct[i].Mean(), corr_y_direct[i].Error());
-  //     fprintf(file, "0 %04d %.12e %.12e\n", i,
-  //             corr_y_direct[i].Mean(), corr_y_direct[i].Error());
-  //   }
-  // }
-  // {
-  //   char path[50];
-  //   sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_z.dat", N, k1, k2, k3);
-  //   FILE* file = fopen(path, "w");
-  //   assert(file != nullptr);
-  //   printf("\ncorr_z:\n");
-  //   for (int i = 0; i < N; i++) {
-  //     printf("0 %04d %.12e %.12e\n", i, corr_z[i].Mean(), corr_z[i].Error());
-  //     fprintf(file, "0 %04d %.12e %.12e\n", i, corr_z[i].Mean(), corr_z[i].Error());
-  //   }
-  // }
+  {
+    char path[50];
+    sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_x.dat", N, k1, k2, k3);
+    FILE* file = fopen(path, "w");
+    assert(file != nullptr);
+    printf("\ncorr_x:\n");
+    for (int i = 0; i <= N/2; i++) {
+      printf("0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
+      fprintf(file, "0 %04d %.12e %.12e\n", i, corr_x[i].Mean(), corr_x[i].Error());
+    }
+  }
+  {
+    char path[54];
+    sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_x_direct.dat", N, k1, k2, k3);
+    FILE* file = fopen(path, "w");
+    assert(file != nullptr);
+    printf("\ncorr_y:\n");
+    for (int i = 0; i <= N/2; i++) {
+      printf("0 %04d %.12e %.12e\n", i,
+             corr_x_direct[i].Mean(), corr_x_direct[i].Error());
+      fprintf(file, "0 %04d %.12e %.12e\n", i,
+              corr_x_direct[i].Mean(), corr_x_direct[i].Error());
+    }
+  }
+  {
+    char path[50];
+    sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_y.dat", N, k1, k2, k3);
+    FILE* file = fopen(path, "w");
+    assert(file != nullptr);
+    printf("\ncorr_y:\n");
+    for (int i = 0; i <= N/2; i++) {
+      printf("0 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
+      fprintf(file, "0 %04d %.12e %.12e\n", i, corr_y[i].Mean(), corr_y[i].Error());
+    }
+  }
+  {
+    char path[54];
+    sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_y_direct.dat", N, k1, k2, k3);
+    FILE* file = fopen(path, "w");
+    assert(file != nullptr);
+    printf("\ncorr_y:\n");
+    for (int i = 0; i <= N/2; i++) {
+      printf("0 %04d %.12e %.12e\n", i,
+             corr_y_direct[i].Mean(), corr_y_direct[i].Error());
+      fprintf(file, "0 %04d %.12e %.12e\n", i,
+              corr_y_direct[i].Mean(), corr_y_direct[i].Error());
+    }
+  }
   {
     char path[54];
     sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_z_direct.dat", N, k1, k2, k3);
     FILE* file = fopen(path, "w");
     assert(file != nullptr);
     printf("\ncorr_z:\n");
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i <= N; i++) {
       printf("0 %04d %.12e %.12e\n", i,
              corr_z_direct[i].Mean(), corr_z_direct[i].Error());
       fprintf(file, "0 %04d %.12e %.12e\n", i,
               corr_z_direct[i].Mean(), corr_z_direct[i].Error());
     }
   }
-  // {
-  //   char path[50];
-  //   sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_w.dat", N, k1, k2, k3);
-  //   FILE* file = fopen(path, "w");
-  //   assert(file != nullptr);
-  //   printf("\ncorr_w:\n");
-  //   for (int i = 0; i < N; i++) {
-  //     printf("0 %04d %.12e %.12e\n", i, corr_w[i].Mean(), corr_w[i].Error());
-  //     fprintf(file, "0 %04d %.12e %.12e\n", i, corr_w[i].Mean(), corr_w[i].Error());
-  //   }
-  // }
   {
     char path[54];
     sprintf(path, "ising_flat_crit/%d_%.3f_%.3f_%.3f_corr_w_direct.dat", N, k1, k2, k3);
     FILE* file = fopen(path, "w");
     assert(file != nullptr);
     printf("\ncorr_w:\n");
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i <= N; i++) {
       printf("0 %04d %.12e %.12e\n", i,
              corr_w_direct[i].Mean(), corr_w_direct[i].Error());
       fprintf(file, "0 %04d %.12e %.12e\n", i,
@@ -416,14 +359,13 @@ int main(int argc, char* argv[]) {
     FILE* file = fopen(path, "w");
     assert(file != nullptr);
     printf("\ncorr_all:\n");
-    for (long int s = 0; s < N*N; s++) {
+    for (int s = 0; s < N*N; s++) {
       const int x = s % N;
       const int y = s / N;
 
-      printf("0 %04ld %04d %04d %.12e %.12e\n", s, x, y,
+      printf("0 %04d %04d %04d %.12e %.12e\n", s, x, y,
              corr_all_direct[s].Mean(), corr_all_direct[s].Error());
-      fprintf(file, "0 %04ld %04d %04d %.12e %.12e\n", s, x, y,
-              // fprintf(file, "0 %04ld %.12e %.12e\n", s,
+      fprintf(file, "0 %04d %04d %04d %.12e %.12e\n", s, x, y,
               corr_all_direct[s].Mean(), corr_all_direct[s].Error());
     }
   }

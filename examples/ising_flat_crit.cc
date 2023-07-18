@@ -43,7 +43,7 @@ double find_crit(double k1, double k2, double k3) {
 
 int main(int argc, char* argv[]) {
 
-  int N = 32;
+  int N = 16;
 
   // choose weights for the 3 directions and calculate beta critical
   double k1 = 1.0;
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   double beta_mult = 1.0;
 
   int n_therm = 2000;
-  int n_traj = 50000;
+  int n_traj = 5000;
   int n_skip = 20;
   int n_wolff = 3;
   int n_metropolis = 5;

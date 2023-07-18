@@ -19,8 +19,8 @@ public:
   void ReadMeasurement(FILE* file);
   void Reset();
   void Measure(double value, bool calc_autocorr = true);
-  double Mean();
-  double Error();
+  double Mean() const;
+  double Error() const;
   double AutocorrFront();
   double AutocorrBack();
 
@@ -72,12 +72,12 @@ void QfeMeasReal::Measure(double value, bool calc_autocorr) {
   }
 }
 
-double QfeMeasReal::Mean() {
+double QfeMeasReal::Mean() const {
   if (n == 0) return 0.0;
   return sum / double(n);
 }
 
-double QfeMeasReal::Error() {
+double QfeMeasReal::Error() const {
   if (n == 0) return 0.0;
   double mean = sum / double(n);
   double mean2 = sum2 / double(n);
