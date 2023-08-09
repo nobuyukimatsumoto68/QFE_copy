@@ -10,11 +10,13 @@
 #include "statistics.h"
 
 double find_crit(const double k1, const double k2, const double k3);
+void write_real( QfeMeasReal& data, const char* data_id,
+                 const char* dir, const char* ensemble_id);
 void write_corr(std::vector<QfeMeasReal>& corr, const char* corr_id,
                 const char* dir, const char* ensemble_id);
 
-int Lx = 64;
-int Ly = Lx;
+int Lx = 96;
+int Ly = 4*Lx;
 int N = Lx*Ly; // PLEASE BE CAREFUL ON THE CONVENTION
 
 int main(int argc, char* argv[]) {
@@ -35,11 +37,17 @@ int main(int argc, char* argv[]) {
   QfeIsing field(&lattice, find_crit(k1, k2, k3) * beta_mult);
   field.HotStart();
 
+
   // correlators
+  QfeMeasReal mag;
+  QfeMeasReal ex;
+  QfeMeasReal ey;
+  QfeMeasReal e;
   std::vector<QfeMeasReal> s_s(Lx*Ly);
   std::vector<QfeMeasReal> ex_ex(Lx*Ly);
   std::vector<QfeMeasReal> ex_ey(Lx*Ly);
   std::vector<QfeMeasReal> ey_ey(Lx*Ly);
+  std::vector<QfeMeasReal> e_e(Lx*Ly);
 
   // ----------------------------
 
@@ -52,11 +60,17 @@ int main(int argc, char* argv[]) {
     // ----------------------------
     // measurement
     if (n % n_skip || n < n_therm) continue;
+    std::cout << "n = " << n << std::endl;
 
+    double mag_sum = 0.0;
+    double ex_sum = 0.0;
+    double ey_sum = 0.0;
+    double e_sum = 0.0;
     std::vector<double> s_s_sum  (Lx*Ly, 0.0);
     std::vector<double> ex_ex_sum(Lx*Ly, 0.0);
     std::vector<double> ex_ey_sum(Lx*Ly, 0.0);
     std::vector<double> ey_ey_sum(Lx*Ly, 0.0);
+    std::vector<double> e_e_sum(Lx*Ly, 0.0);
 
     for(int x1=0; x1<Lx; x1++){
       const int x1p1 = (x1+1)%Lx;
@@ -74,6 +88,12 @@ int main(int argc, char* argv[]) {
 
         const double ex1 = 0.5*s1*(s1px+s1mx);
         const double ey1 = 0.5*s1*(s1py+s1my);
+        const double e1 = 0.25*s1*(s1px+s1mx+s1py+s1my);
+
+        mag_sum += s1;
+        ex_sum += ex1;
+        ey_sum += ey1;
+        e_sum += e1;
 
         for(int x2=0; x2<Lx; x2++){
           const int x2p1 = (x2+1)%Lx;
@@ -93,32 +113,45 @@ int main(int argc, char* argv[]) {
 
             const double ex2 = 0.5*s2*(s2px+s2mx);
             const double ey2 = 0.5*s2*(s2py+s2my);
+            const double e2 = 0.25*s2*(s2px+s2mx+s2py+s2my);
 
             s_s_sum  [dx +Lx* dy] += s1 *s2;
             ex_ex_sum[dx +Lx* dy] += ex1*ex2;
             ex_ey_sum[dx +Lx* dy] += ex1*ey2;
             ey_ey_sum[dx +Lx* dy] += ey1*ey2;
+            e_e_sum[dx +Lx* dy] += e1*e2;
           }}
       }}
 
+    mag.Measure( mag_sum/N );
+    ex.Measure( ex_sum/N );
+    ey.Measure( ey_sum/N );
+    e.Measure( e_sum/N );
     for(int i=0; i<N; i++){
       s_s  [i].Measure( s_s_sum  [i]/N );
       ex_ex[i].Measure( ex_ex_sum[i]/N );
       ex_ey[i].Measure( ex_ey_sum[i]/N );
       ey_ey[i].Measure( ey_ey_sum[i]/N );
+      e_e[i].Measure( e_e_sum[i]/N );
     }
   }
 
   // open an output file
-  const char *dir = "ising_t2/";
+  const char *dir = "data/";
   std::filesystem::create_directory(dir);
   char ensemble_id[50];
-  sprintf(ensemble_id, "%d_%d_%.3f_%.3f_%.3f", Lx, Ly, k1, k2, k3);
+  snprintf(ensemble_id, 50, "%d_%d_%.3f_%.3f_%.3f", Lx, Ly, k1, k2, k3);
 
+  write_real(mag, "mag", dir, ensemble_id);
+  write_real(ex,  "ex",  dir, ensemble_id);
+  write_real(ey,  "ey",  dir, ensemble_id);
+  write_real(e,   "e",  dir, ensemble_id);
+  //
   write_corr(s_s,   "s_s",   dir, ensemble_id);
   write_corr(ex_ex, "ex_ex", dir, ensemble_id);
   write_corr(ex_ey, "ex_ey", dir, ensemble_id);
   write_corr(ey_ey, "ey_ey", dir, ensemble_id);
+  write_corr(e_e,   "e_e",   dir, ensemble_id);
 
   return 0;
 }
@@ -160,25 +193,67 @@ double find_crit(const double k1, const double k2, const double k3) {
 }
 
 
-void write_corr( std::vector<QfeMeasReal>& corr, const char* corr_id,
+void write_real( QfeMeasReal& data, const char* data_id,
                  const char* dir, const char* ensemble_id){
-  // s_s
   char path_mean[60];
-  sprintf(path_mean, "%s%s_%s_%s", dir, ensemble_id, corr_id, "mean.dat");
+  snprintf(path_mean, 60, "%s%s_%s_%s", dir, ensemble_id, data_id, "mean.dat");
   FILE* f_mean = fopen(path_mean, "w");
   assert(f_mean != nullptr);
 
   char path_err[60];
-  sprintf(path_err, "%s%s_%s_%s", dir, ensemble_id, corr_id, "err.dat");
+  snprintf(path_err, 60, "%s%s_%s_%s", dir, ensemble_id, data_id, "err.dat");
   FILE* f_err = fopen(path_err, "w");
   assert(f_err != nullptr);
 
+  // char path_autocorr_f[60];
+  // snprintf(path_autocorr_f, 60, "%s%s_%s_%s", dir, ensemble_id, data_id, "autocorr_f.dat");
+  // FILE* f_autocorr_f = fopen(path_autocorr_f, "w");
+  // assert(f_autocorr_f != nullptr);
+
+  // char path_autocorr_b[60];
+  // snprintf(path_autocorr_b, 60, "%s%s_%s_%s", dir, ensemble_id, data_id, "autocorr_b.dat");
+  // FILE* f_autocorr_b = fopen(path_autocorr_b, "w");
+  // assert(f_autocorr_b != nullptr);
+
+  fprintf(f_mean, "%.15e ", data.Mean() );
+  fprintf(f_err,  "%.15e ", data.Error() );
+  // fprintf(f_autocorr_f,  "%.15e ", data.AutocorrFront() );
+  // fprintf(f_autocorr_b,  "%.15e ", data.AutocorrBack() );
+}
+
+
+void write_corr( std::vector<QfeMeasReal>& corr, const char* corr_id,
+                 const char* dir, const char* ensemble_id){
+  char path_mean[60];
+  snprintf(path_mean, 60, "%s%s_%s_%s", dir, ensemble_id, corr_id, "mean.dat");
+  FILE* f_mean = fopen(path_mean, "w");
+  assert(f_mean != nullptr);
+
+  char path_err[60];
+  snprintf(path_err, 60, "%s%s_%s_%s", dir, ensemble_id, corr_id, "err.dat");
+  FILE* f_err = fopen(path_err, "w");
+  assert(f_err != nullptr);
+
+  // char path_autocorr_f[60];
+  // snprintf(path_autocorr_f, 60, "%s%s_%s_%s", dir, ensemble_id, corr_id, "autocorr_f.dat");
+  // FILE* f_autocorr_f = fopen(path_autocorr_f, "w");
+  // assert(f_autocorr_f != nullptr);
+
+  // char path_autocorr_b[60];
+  // snprintf(path_autocorr_b, 60, "%s%s_%s_%s", dir, ensemble_id, corr_id, "autocorr_b.dat");
+  // FILE* f_autocorr_b = fopen(path_autocorr_b, "w");
+  // assert(f_autocorr_b != nullptr);
+
   for(int x=0; x<Lx; x++) {
     for(int y=0; y<Ly; y++){
-      fprintf(f_mean, "%.15e ", corr[x+Ly*y].Mean() );
-      fprintf(f_err,  "%.15e ", corr[x+Ly*y].Error() );
+      fprintf(f_mean, "%.15e ", corr[x+Lx*y].Mean() );
+      fprintf(f_err,  "%.15e ", corr[x+Lx*y].Error() );
+      // fprintf(f_autocorr_f,  "%.15e ", corr[x+Lx*y].AutocorrFront() );
+      // fprintf(f_autocorr_b,  "%.15e ", corr[x+Lx*y].AutocorrBack() );
     }
     fprintf(f_mean, "\n");
     fprintf(f_err,  "\n");
+    // fprintf(f_autocorr_f,  "\n");
+    // fprintf(f_autocorr_b,  "\n");
   }
 }

@@ -1,6 +1,5 @@
-CXX=g++
-CXXFLAGS=-std=c++17 -O3 -Wall -Wno-unknown-warning-option \
-	-Wno-deprecated-declarations -Wno-sign-compare
+CXX=g++-13
+CXXFLAGS=-std=c++17 -O3 -Wall
 # CXXFLAGS=-std=c++14 -O3 -Wall -Xpreprocessor -fopenmp
 
 # directory where executables can access symmetry group data files
@@ -8,9 +7,9 @@ GRP_DIR=$(shell pwd)/../grp
 CXXFLAGS+=-DGRP_DIR="\"$(GRP_DIR)\""
 
 SRC=$(wildcard *.cc)
-BIN_DIR=../bin
+BIN_DIR=./bin
 BIN=$(basename $(SRC))
-INC_DIR=../include
+INC_DIR=../../include
 INC=$(wildcard $(INC_DIR)/*.h)
 
 .PHONY: clean
