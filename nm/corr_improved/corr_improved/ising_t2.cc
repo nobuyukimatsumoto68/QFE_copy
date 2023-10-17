@@ -6,23 +6,23 @@
 #include <vector>
 #include <filesystem>
 #include <iostream>
-#include <fstream>
 #include "ising.h"
 #include "statistics.h"
 
 // --------------
 
 void FreezeBonds( int frozen[][6], const QfeIsing& field );
-int FindClusters( int* label, int* size, const int frozen[][6] );
+int FindClusters( int frozen[][6], int* label, int* size);
 
+void printArray( const auto& lattice);
 void printArray(int* lattice);
 
 // --------------
 
 double find_crit(const double k1, const double k2, const double k3);
 
-int Lx = 24;
-int Ly = 24;
+int Lx = 4;
+int Ly = 8;
 
 int N = Lx*Ly; // PLEASE BE CAREFUL ON THE CONVENTION
 double K[3];
@@ -40,13 +40,8 @@ int main(int argc, char* argv[]) {
   lattice.InitTriangle( Lx, Ly, K[0], K[1], K[2] );
   lattice.SeedRng( seed );
 
-  double off_crit_meas = 0.8;
-  QfeIsing field( &lattice, find_crit(K[0],K[1],K[2])*off_crit_meas  );
+  QfeIsing field( &lattice, find_crit(K[0],K[1],K[2]) );
   field.HotStart();
-
-  for (int n = 0; n < 200; n++) {
-    field.WolffUpdate();
-  }
 
   // --------------------
 
@@ -55,45 +50,27 @@ int main(int argc, char* argv[]) {
   int size[N];
 
   FreezeBonds( frozen, field );
-  FindClusters( label, size, frozen );
 
-
-  // -----------------
-
-  std::ofstream ofs_spin("spin.dat");
-  ofs_spin << "# spin snapshot" << std::endl;
+  std::cout << "spin array with N = " << N << std::endl;
   for(int y=0; y<Ly; y++){
     for(int x=0; x<Lx; x++){
-      ofs_spin << std::setw(5) << field.spin[x+Lx*y] << " ";
+      std::cout << std::setw(5) << field.spin[x+Lx*y] << " ";
     }
-    ofs_spin << std::endl;
+    std::cout << std::endl;
   }
-  ofs_spin << std::endl;
 
-
-  std::ofstream ofs_link("link_info.dat");
-  ofs_link << "# link info" << std::endl;
+  std::cout << "spin array with N = " << N << std::endl;
   for(int y=0; y<Ly; y++){
     for(int x=0; x<Lx; x++){
-      ofs_link << std::setw(10) << "("
-                << frozen[x+Lx*y][0] << "," << frozen[x+Lx*y][1] << "," << frozen[x+Lx*y][2] << ","
-                << frozen[x+Lx*y][3] << "," << frozen[x+Lx*y][4] << "," << frozen[x+Lx*y][5]
-                << ") ";
+      std::cout << std::setw(5) << field.spin[x+Lx*y] << " ";
     }
-    ofs_link << std::endl;
+    std::cout << std::endl;
   }
-  ofs_link << std::endl;
 
+  FindClusters( frozen, label, size );
 
-  std::ofstream ofs_cluster("clusters.dat");
-  ofs_cluster << "# clusters" << std::endl;
-  for(int y=0; y<Ly; y++){
-    for(int x=0; x<Lx; x++){
-      ofs_cluster << std::setw(5) << label[x+Lx*y] << " ";
-    }
-    ofs_cluster << std::endl;
-  }
-  ofs_cluster << std::endl;
+  std::cout << "Cluster Labels " << std::endl;
+  printArray( label );
 
   return 0;
 }
@@ -144,15 +121,11 @@ void FreezeBonds( int frozen[][6], const QfeIsing& field ){
       const int i_nn = nn(i,mu);
       const int spin_nn = field.spin[i_nn];
 
-      if(spin*spin_nn>0){
+      if(spin==spin_nn){
         const double r = field.lattice->rng.RandReal();
         if( r>exp(-2*K[mu]) ){
           frozen[i][mu] = 1;
           frozen[i_nn][mu+3] = 1;
-        }
-        else{
-          frozen[i][mu] = 0;
-          frozen[i_nn][mu+3] = 0;
         }
       }
       else{
@@ -160,19 +133,21 @@ void FreezeBonds( int frozen[][6], const QfeIsing& field ){
         frozen[i_nn][mu+3] = 0;
       }
 
-    }}
+    }
+  }
 }
 
 
 
 // label=0 means it has not been found.
 // len(label)=N, len(size) [nontrivial part] <= N
-int FindClusters( int* label, int* size, const int frozen[][6] ){
+int FindClusters(int frozen[][6], int* label, int* size){
 
   for(int i=0; i<N; i++){
     label[i] = -1;
     size[i] = 0;
   }
+
   int i_cluster = 0; // counting up clusters
 
   for(int i=0; i<N; i++){
@@ -189,11 +164,13 @@ int FindClusters( int* label, int* size, const int frozen[][6] ){
 
       for(int mu=0; mu<6; mu++){
         const int k = nn(j, mu);
-        if( frozen[j][mu]==0 || label[k]>=0 ) continue;
+        if( frozen[k][mu]==0 || label[k]>=0 ) continue;
+
         label[k] = i_cluster;
         stack.push(k);
       }
     }
+
     i_cluster++;
   }
 
@@ -202,6 +179,16 @@ int FindClusters( int* label, int* size, const int frozen[][6] ){
 
 
 
+void printArray(const auto& lattice){
+  std::cout << "\n--------------------------------------------";
+  for(int y=0; y<Ly; y++){
+    std::cout << std::endl;
+    for(int x=0; x<Lx; x++){
+      printf(" %4d", lattice[ x + y*Lx ]);
+    }
+  }
+  std::cout << "\n-------------------------------------------- \n";
+}
 
 void printArray(int* lattice){
   std::cout << "\n--------------------------------------------";
