@@ -31,8 +31,6 @@ double K[3];
 
 int main(int argc, char* argv[]) {
 
-  std::cout << "debug 1" << std::endl;
-
   unsigned int seed = 0;
   K[0] = 1.0;
   K[1] = 1.0;
@@ -47,13 +45,9 @@ int main(int argc, char* argv[]) {
 
   // --------------------
 
-  std::cout << "debug 2" << std::endl;
-
   int frozen[N][6];
   int label[N];
   int size[N];
-
-  std::cout << "debug 3" << std::endl;
 
   FreezeBonds( frozen, field );
 
@@ -73,14 +67,10 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
   }
 
-  std::cout << "debug 4" << std::endl;
-
   FindClusters( frozen, label, size );
 
-  std::cout << "debug 5" << std::endl;
-
-  // std::cout << "Cluster Labels " << std::endl;
-  // printArray( label );
+  std::cout << "Cluster Labels " << std::endl;
+  printArray( label );
 
   return 0;
 }
@@ -131,7 +121,7 @@ void FreezeBonds( int frozen[][6], const QfeIsing& field ){
       const int i_nn = nn(i,mu);
       const int spin_nn = field.spin[i_nn];
 
-      if(spin*spin_nn>0){
+      if(spin==spin_nn){
         const double r = field.lattice->rng.RandReal();
         if( r>exp(-2*K[mu]) ){
           frozen[i][mu] = 1;
@@ -154,29 +144,27 @@ void FreezeBonds( int frozen[][6], const QfeIsing& field ){
 int FindClusters(int frozen[][6], int* label, int* size){
 
   for(int i=0; i<N; i++){
-    label[i] = 0;
+    label[i] = -1;
     size[i] = 0;
   }
 
   int i_cluster = 0; // counting up clusters
 
   for(int i=0; i<N; i++){
-    std::cout << "i=" << i << std::endl;
-    if( label[i]!=0 ) continue;
+    if( label[i]!=-1 ) continue;
 
     std::stack<int> stack; // for cluster including i
     stack.push(i);
 
     while( !stack.empty() ){
       const int j = stack.top();
-      std::cout << "j=" << j << std::endl;
       label[j] = i_cluster;
       size[i_cluster] += 1;
       stack.pop();
 
       for(int mu=0; mu<6; mu++){
         const int k = nn(j, mu);
-        if( frozen[k][mu]==0 || label[k]>0 ) continue;
+        if( frozen[k][mu]==0 || label[k]>=0 ) continue;
 
         label[k] = i_cluster;
         stack.push(k);
